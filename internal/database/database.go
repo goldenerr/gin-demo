@@ -16,48 +16,27 @@ import (
 
 var DB *gorm.DB
 
-type ZapGormWriter struct {
-	Logger *zap.Logger
+type ContextLogger struct {
+	ZapLogger *zap.Logger
 }
 
-func (w ZapGormWriter) Printf(format string, args ...interface{}) {
-	w.Logger.Sugar().Infof(format, args...)
+func (l ContextLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
+	return l
 }
 
-type TracingLogger struct {
-	ZapGormWriter
-	LogLevel gormlogger.LogLevel
+func (l ContextLogger) Info(ctx context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Info(fmt.Sprintf(msg, data...), zap.String("requestID", tracing.FromContext(ctx)))
 }
 
-func (l TracingLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
-	newLogger := l
-	newLogger.LogLevel = level
-	return &newLogger
+func (l ContextLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Warn(fmt.Sprintf(msg, data...), zap.String("requestID", tracing.FromContext(ctx)))
 }
 
-func (l TracingLogger) Info(ctx context.Context, msg string, data ...interface{}) {
-	if l.LogLevel >= gormlogger.Info {
-		l.Logger.Info(fmt.Sprintf(msg, data...), zap.String("requestID", tracing.FromContext(ctx)))
-	}
+func (l ContextLogger) Error(ctx context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Error(fmt.Sprintf(msg, data...), zap.String("requestID", tracing.FromContext(ctx)))
 }
 
-func (l TracingLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
-	if l.LogLevel >= gormlogger.Warn {
-		l.Logger.Warn(fmt.Sprintf(msg, data...), zap.String("requestID", tracing.FromContext(ctx)))
-	}
-}
-
-func (l TracingLogger) Error(ctx context.Context, msg string, data ...interface{}) {
-	if l.LogLevel >= gormlogger.Error {
-		l.Logger.Error(fmt.Sprintf(msg, data...), zap.String("requestID", tracing.FromContext(ctx)))
-	}
-}
-
-func (l TracingLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	if l.LogLevel <= gormlogger.Silent {
-		return
-	}
-
+func (l ContextLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	fields := []zap.Field{
@@ -68,9 +47,9 @@ func (l TracingLogger) Trace(ctx context.Context, begin time.Time, fc func() (st
 	}
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		l.Logger.Error("trace", fields...)
+		l.ZapLogger.Error("SQL query failed", fields...)
 	} else {
-		l.Logger.Info("trace", fields...)
+		l.ZapLogger.Info("SQL query", fields...)
 	}
 }
 
@@ -93,10 +72,7 @@ func Init() error {
 		} else if cfg.LogLevel == "warn" {
 			logLevel = gormlogger.Warn
 		}
-		gormConfig.Logger = &TracingLogger{
-			ZapGormWriter: ZapGormWriter{Logger: logger.GetLogger()},
-			LogLevel:      logLevel,
-		}
+		gormConfig.Logger = ContextLogger{ZapLogger: logger.GetLogger()}.LogMode(logLevel)
 		logger.Info("GORM logger configured", zap.String("logLevel", cfg.LogLevel))
 	} else {
 		logger.Info("SQL logging is disabled")
