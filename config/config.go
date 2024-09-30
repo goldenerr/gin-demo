@@ -23,12 +23,13 @@ type DatabaseConfig struct {
 }
 
 type LogConfig struct {
-	Level      string
-	Filename   string
-	MaxSize    int
-	MaxBackups int
-	MaxAge     int
-	Compress   bool
+	Level       string
+	Filename    string
+	MaxSize     int
+	MaxSizeUnit string
+	MaxBackups  int
+	MaxAge      int
+	Compress    bool
 }
 
 var cfg Config
