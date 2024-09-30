@@ -1,0 +1,15 @@
+server:
+  port: "8888"
+
+database:
+  dsn: "root:Jinke@.123@tcp(10.0.1.141:3307)/taskdb?charset=utf8mb4&parseTime=True&loc=Local"
+  logSQL: true
+  logLevel: "info"
+
+log:
+  level: "info"
+  filename: "./logs/app.log"
+  maxSize: 100
+  maxBackups: 3
+  maxAge: 28
+  compress: false

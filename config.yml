@@ -1,0 +1,18 @@
+app:
+  name: "MyApp"
+  port: 8888
+  debug: false
+
+database:
+  driver: "mysql"
+  dsn: "root:Jinke@.123@tcp(10.0.1.141:3307)/taskdb?charset=utf8mb4&parseTime=True&loc=Local"
+  log_sql: true
+  log_level: "info"  # 添加这一行，用于控制 SQL 日志级别
+
+log:
+  level: "debug"
+  filename: "./logs/app.log"
+  max_size: 100
+  max_backups: 3
+  max_age: 28
+  compress: true
