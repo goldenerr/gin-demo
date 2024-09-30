@@ -8,7 +8,7 @@ database:
 
 log:
   level: "info"
-  filename: "./logs/20060102.log"
+  filename: "/Users/jacklondon/go/logs/20060102.log"
   maxSize: 1  # 日志文件大小，现在设置为1
   maxSizeUnit: "M"  # 单位改为M，表示1MB
   maxBackups: 10
