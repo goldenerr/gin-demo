@@ -35,19 +35,19 @@ func main() {
 	}
 	fmt.Println("App initialized successfully")
 
-	// 启动一个 goroutine 来写入测试日志
-	go func() {
-		for i := 0; i < 10000; i++ {
-			logger.Info(fmt.Sprintf("Test log entry %d", i))
-		}
-	}()
+	// // 启动一个 goroutine 来写入测试日志
+	// go func() {
+	// 	for i := 0; i < 10000; i++ {
+	// 		logger.Info(fmt.Sprintf("Test log entry %d", i))
+	// 	}
+	// }()
 
-	// 在 main 函数中，application.Run() 之前添加：
-	go func() {
-		for i := 0; i < 100000; i++ {
-			logger.Info(fmt.Sprintf("Test log entry %d: This is a longer log message to help reach the 1MB threshold faster.", i))
-		}
-	}()
+	// // 在 main 函数中，application.Run() 之前添加：
+	// go func() {
+	// 	for i := 0; i < 100000; i++ {
+	// 		logger.Info(fmt.Sprintf("Test log entry %d: This is a longer log message to help reach the 1MB threshold faster.", i))
+	// 	}
+	// }()
 
 	if err := application.Run(); err != nil {
 		fmt.Printf("Failed to run app: %v\n", err)
